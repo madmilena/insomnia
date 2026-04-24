@@ -1,4 +1,3 @@
-import { set } from 'date-fns';
 import { useState } from 'react';
 import { Button } from 'react-aria-components';
 
@@ -19,7 +18,7 @@ import { showModal } from '~/ui/components/modals';
 import { PromptModal } from '~/ui/components/modals/prompt-modal';
 import type { CollectionChildFlatItem } from '~/ui/components/sidebar/project-navigation-sidebar/types';
 import { getMethodShortHand, getRequestMethodShortHand } from '~/ui/components/tags/method-tag';
-import { useRequestGroupPatcher, useRequestPatcher } from '~/ui/hooks/use-request';
+import { useRequestGroupPatcher, useRequestMetaPatcher, useRequestPatcher } from '~/ui/hooks/use-request';
 
 import { Icon } from '../../icon';
 import {
@@ -88,10 +87,11 @@ interface RequestNodeProps {
 }
 
 export const RequestNode = ({ item, onToggleFolder }: RequestNodeProps) => {
-  const { doc, level, workspace, project, collapsed } = item;
+  const { doc, level, workspace, project, collapsed, pinned, isPinnedDuplicate } = item;
 
   const patchRequest = useRequestPatcher();
   const patchGroup = useRequestGroupPatcher();
+  const patchRequestMeta = useRequestMetaPatcher();
   const isFolder = models.requestGroup.isRequestGroup(doc);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
@@ -138,6 +138,13 @@ export const RequestNode = ({ item, onToggleFolder }: RequestNodeProps) => {
           }
         }}
       />
+      {!models.requestGroup.isRequestGroup(doc) && pinned && (
+        <Icon
+          className="text-(--font-size-sm)"
+          icon="thumb-tack"
+          onClick={() => patchRequestMeta(item.doc._id, { pinned: false })}
+        />
+      )}
       {models.requestGroup.isRequestGroup(doc) && !isEditable && (
         <RequestGroupActionsDropdown
           requestGroup={doc}
@@ -157,7 +164,7 @@ export const RequestNode = ({ item, onToggleFolder }: RequestNodeProps) => {
           onOpenChange={setIsContextMenuOpen}
         />
       )}
-      {!models.requestGroup.isRequestGroup(doc) && !isEditable && (
+      {!models.requestGroup.isRequestGroup(doc) && !isEditable && !isPinnedDuplicate && (
         <RequestActionsDropdown
           request={doc}
           onRename={() =>

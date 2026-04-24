@@ -21,6 +21,7 @@ import {
   Popover,
   Radio,
   RadioGroup,
+  SubmenuTrigger,
 } from 'react-aria-components';
 import { href } from 'react-router';
 
@@ -33,7 +34,7 @@ import { useWorkspaceUpdateActionFetcher } from '~/routes/organization.$organiza
 import { useTabNavigate } from '~/ui/hooks/use-insomnia-tab';
 import type { CreateRequestType } from '~/ui/hooks/use-request';
 
-import { getProductName } from '../../../common/constants';
+import { getProductName, SORT_ORDERS, sortOrderName } from '../../../common/constants';
 import { getWorkspaceLabel } from '../../../common/get-workspace-label';
 import type { PlatformKeyCombinations } from '../../../common/settings';
 import { SegmentEvent } from '../../analytics';
@@ -60,6 +61,8 @@ interface ActionItem {
   hint?: PlatformKeyCombinations;
   action: () => void;
   className?: string;
+  hasSubmenu?: boolean;
+  submenuItems?: Omit<ActionItem, 'icon'>[];
 }
 
 interface ActionSection {
@@ -230,6 +233,22 @@ export const SidebarWorkspaceDropdown = ({ workspace, project, organizationId }:
             },
           ]
         : []),
+      ...(models.workspace.isCollection(workspace)
+        ? [
+            {
+              id: 'Sort',
+              name: 'Sort',
+              icon: 'sort' as IconName,
+              action: () => {},
+              hasSubmenu: true,
+              submenuItems: SORT_ORDERS.map(order => ({
+                id: order,
+                name: sortOrderName[order],
+                action: () => {},
+              })),
+            },
+          ]
+        : []),
       {
         id: 'Rename',
         name: 'Rename',
@@ -316,18 +335,49 @@ export const SidebarWorkspaceDropdown = ({ workspace, project, organizationId }:
                   <Icon icon={section.icon} /> <span>{section.name}</span>
                 </Header>
                 <Collection items={section.items}>
-                  {item => (
-                    <MenuItem
-                      key={item.id}
-                      id={item.id}
-                      className={`flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold${item.className ? ` ${item.className}` : ''}`}
-                      aria-label={item.name}
-                    >
-                      <Icon icon={item.icon} />
-                      <span>{item.name}</span>
-                      {item.hint && <DropdownHint keyBindings={item.hint} />}
-                    </MenuItem>
-                  )}
+                  {item =>
+                    !item.hasSubmenu ? (
+                      <MenuItem
+                        key={item.id}
+                        id={item.id}
+                        className={`flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold${item.className ? ` ${item.className}` : ''}`}
+                        aria-label={item.name}
+                      >
+                        <Icon icon={item.icon} className="h-4 w-3" />
+                        <span>{item.name}</span>
+                        {item.hint && <DropdownHint keyBindings={item.hint} />}
+                      </MenuItem>
+                    ) : (
+                      <SubmenuTrigger>
+                        <MenuItem
+                          className={`flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold${item.className ? ` ${item.className}` : ''}`}
+                          aria-label={item.name}
+                        >
+                          <Icon icon={item.icon} className="h-4 w-3" />
+                          <span>{item.name}</span>
+                          <Icon icon="chevron-right" className="ml-auto" />
+                        </MenuItem>
+                        <Popover className="flex min-w-max flex-col overflow-y-hidden">
+                          <Menu
+                            aria-label={`${item.name} submenu`}
+                            onAction={key => item.submenuItems?.find(s => s.id === key)?.action()}
+                            items={item.submenuItems}
+                            className="min-w-max overflow-y-auto rounded-md border border-solid border-(--hl-sm) bg-(--color-bg) py-2 text-sm shadow-lg select-none focus:outline-hidden"
+                          >
+                            {subItem => (
+                              <MenuItem
+                                id={subItem.id}
+                                className="flex h-(--line-height-xs) w-full items-center gap-2 bg-transparent px-(--padding-md) whitespace-nowrap text-(--color-font) transition-colors hover:bg-(--hl-sm) focus:bg-(--hl-xs) focus:outline-hidden disabled:cursor-not-allowed aria-selected:font-bold"
+                                aria-label={subItem.name}
+                              >
+                                <span>{subItem.name}</span>
+                              </MenuItem>
+                            )}
+                          </Menu>
+                        </Popover>
+                      </SubmenuTrigger>
+                    )
+                  }
                 </Collection>
               </MenuSection>
             )}

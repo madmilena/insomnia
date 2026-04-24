@@ -374,6 +374,7 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
               (!shouldHideCollectionChildren || !!projectNavigationSidebarFilter) && allRequestsAndMetaInWorkspace
                 ? flattenCollectionChildren(workspaceId, shouldHideCollectionChildren, allRequestsAndMetaInWorkspace)
                 : [];
+            const pinnedCollectionChildren = collectionChildren.filter(child => child.pinned);
 
             if (projectNavigationSidebarFilter) {
               // apply filter to collection children first
@@ -392,6 +393,24 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
               items.find(i => i.kind === 'workspace' && i.doc._id === workspaceId)!.hidden = shouldHide;
             }
 
+            // Pinned requests will also show at the top of the list
+            pinnedCollectionChildren.forEach(child => {
+              items.push({
+                kind: 'collectionChild',
+                organizationId,
+                project: project,
+                workspace: workspace as Workspace,
+                children: child.children,
+                ancestors: child.ancestors,
+                doc: child.doc,
+                collapsed: child.collapsed,
+                hidden: false,
+                level: 0,
+                pinned: true,
+                isPinnedDuplicate: true,
+              });
+            });
+
             collectionChildren.forEach(child => {
               items.push({
                 kind: 'collectionChild',
@@ -405,6 +424,7 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
                 hidden: child.hidden,
                 level: child.level,
                 pinned: child.pinned,
+                isPinnedDuplicate: false,
               });
             });
           }
@@ -669,8 +689,9 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
 
             return (
               <GridListItem
-                key={virtualItem.key}
-                id={item.doc._id}
+                // Prefix pinned- to the key and id to ensure pinned items have a different key and id from non-pinned items with the same doc._id
+                key={`${'isPinnedDuplicate' in item && item.isPinnedDuplicate ? 'pinned-duplicate-' : ''}${virtualItem.key}`}
+                id={`${'isPinnedDuplicate' in item && item.isPinnedDuplicate ? 'pinned-duplicate-' : ''}${item.doc._id}`}
                 textValue={item.doc.name || item.kind}
                 onAuxClick={e => {
                   if (e.button === 1 && item.kind === 'collectionChild') {

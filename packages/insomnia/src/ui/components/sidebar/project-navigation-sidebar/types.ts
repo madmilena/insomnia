@@ -40,7 +40,7 @@ export interface WorkspaceFlatItem extends BaseFlatItem<Workspace> {
 
 //unsynced workspace in clod sync project
 type UnsyncedWorkspaceDoc = InsomniaFile & { _id: string };
-export type UnsyncedWorkspaceFlatItem = Exclude<BaseFlatItem<any>, 'doc'> &
+export type UnsyncedWorkspaceFlatItem = Omit<BaseFlatItem<any>, 'doc'> &
   Pick<WorkspaceFlatItem, 'project'> & {
     kind: 'unsyncedWorkspace';
     doc: UnsyncedWorkspaceDoc;
@@ -58,6 +58,8 @@ export interface CollectionChildFlatItem extends BaseFlatItem<Child['doc']> {
   ancestors?: string[];
   level: number;
   pinned: boolean;
+  // indicates whether this is a duplicate pinned item. This can happen when a request is pinned and also show on the top of the list.
+  isPinnedDuplicate: boolean;
 }
 
 export type FlatItem = ProjectFlatItem | WorkspaceFlatItem | CollectionChildFlatItem | UnsyncedWorkspaceFlatItem;
