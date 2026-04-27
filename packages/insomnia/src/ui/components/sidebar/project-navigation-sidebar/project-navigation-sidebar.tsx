@@ -5,6 +5,7 @@ import { Button, GridList, GridListItem, Input, SearchField } from 'react-aria-c
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import * as reactUse from 'react-use';
 
+import type { SortOrder } from '~/common/constants';
 import { fuzzyMatchAll } from '~/common/misc';
 import {
   getAllRemoteBackendProjectsByProjectId,
@@ -100,6 +101,7 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
   const tabNavigate = useTabNavigate();
 
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [collectionSortOrders, setCollectionSortOrders] = useState<Record<string, SortOrder>>({});
   const [unsyncedFilesByProjectId, setUnsyncedFilesByProjectId] = useState<Map<string, InsomniaFile[]>>(new Map());
   const [projectNavigationSidebarFilter, setProjectNavigationSidebarFilter] = reactUse.useLocalStorage(
     `${organizationId}:project-navigation-sidebar-filter`,
@@ -372,7 +374,12 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
             const shouldHideCollectionChildren = isWorkspaceCollapsed || isProjectCollapsed;
             let collectionChildren =
               (!shouldHideCollectionChildren || !!projectNavigationSidebarFilter) && allRequestsAndMetaInWorkspace
-                ? flattenCollectionChildren(workspaceId, shouldHideCollectionChildren, allRequestsAndMetaInWorkspace)
+                ? flattenCollectionChildren(
+                    workspaceId,
+                    shouldHideCollectionChildren,
+                    allRequestsAndMetaInWorkspace,
+                    collectionSortOrders[workspaceId] || 'type-manual',
+                  )
                 : [];
             const pinnedCollectionChildren = collectionChildren.filter(child => child.pinned);
 
@@ -458,6 +465,7 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
     projectNavigationSidebarFilter,
     projectsWithPresence,
     unsyncedFilesByProjectId,
+    collectionSortOrders,
   ]);
 
   const toggleProjectOrWorkspace = useCallback(
@@ -763,7 +771,21 @@ export const ProjectNavigationSidebar = ({ storageRules, konnectSyncEnabled }: P
                   <ProjectNode item={item} onToggle={toggleProjectOrWorkspace} storageRules={storageRules} />
                 )}
 
-                {item.kind === 'workspace' && <WorkspaceNode item={item} onToggle={toggleProjectOrWorkspace} />}
+                {item.kind === 'workspace' && (
+                  <WorkspaceNode
+                    item={item}
+                    onToggle={toggleProjectOrWorkspace}
+                    sortOrder={collectionSortOrders[item.doc._id] || 'type-manual'}
+                    onSortOrderChange={newSortOder => {
+                      if (item.doc.scope === 'collection') {
+                        setCollectionSortOrders(prev => {
+                          const newCollectionSortOrders = { ...prev, [item.doc._id]: newSortOder };
+                          return newCollectionSortOrders;
+                        });
+                      }
+                    }}
+                  />
+                )}
 
                 {item.kind === 'collectionChild' && <RequestNode item={item} onToggleFolder={toggleRequestGroups} />}
                 {item.kind === 'unsyncedWorkspace' && <UnsyncedWorkspaceNode item={item} />}
