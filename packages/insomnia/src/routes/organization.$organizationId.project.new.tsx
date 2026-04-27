@@ -56,7 +56,6 @@ export const reportGitProjectCount = async (organizationId: string, sessionId: s
 const createProjectImpl = async (organizationId: string, newProjectData: CreateProjectData) => {
   const user = await services.userSession.getOrCreate();
   const sessionId = user.id;
-  invariant(sessionId, 'User must be logged in to create a project');
 
   if (newProjectData.storageType === 'local') {
     const project = await services.project.create({
@@ -74,7 +73,9 @@ const createProjectImpl = async (organizationId: string, newProjectData: CreateP
         parentId: organizationId,
         gitRepositoryId: models.project.EMPTY_GIT_PROJECT_ID,
       });
-      reportGitProjectCount(organizationId, sessionId);
+      if (sessionId) {
+        reportGitProjectCount(organizationId, sessionId);
+      }
 
       return project._id;
     }
@@ -92,10 +93,14 @@ const createProjectImpl = async (organizationId: string, newProjectData: CreateP
     if (errors) {
       throw new Error(errors.join(', '));
     }
-    reportGitProjectCount(organizationId, sessionId);
+    if (sessionId) {
+      reportGitProjectCount(organizationId, sessionId);
+    }
 
     return projectId;
   }
+
+  invariant(sessionId, 'User must be logged in to create a cloud project');
 
   try {
     const newCloudProject = await createTeamProject({

@@ -3,7 +3,7 @@ import { href, redirect } from 'react-router';
 
 import * as session from '~/account/session';
 import { services } from '~/insomnia-data';
-import { findPersonalOrganization } from '~/models/organization';
+import { findPersonalOrganization, LOCAL_ORGANIZATION_ID } from '~/models/organization';
 import { migrateProjectsUnderOrganization, syncOrganizations } from '~/ui/organization-utils';
 import { invariant } from '~/utils/invariant';
 
@@ -41,5 +41,5 @@ export async function clientLoader(_args: Route.ClientLoaderArgs) {
   }
 
   await session.logout();
-  return redirect(href('/auth/login'));
+  return redirect(href('/organization/:organizationId/project', { organizationId: LOCAL_ORGANIZATION_ID }));
 }

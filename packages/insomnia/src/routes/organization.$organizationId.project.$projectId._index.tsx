@@ -49,7 +49,12 @@ import type {
 import { services } from '~/insomnia-data';
 import * as models from '~/models';
 import { sortProjects } from '~/models/helpers/project';
-import { isOwnerOfOrganization, isPersonalOrganization, isScratchpadOrganizationId } from '~/models/organization';
+import {
+  isOfflineOrganizationId,
+  isOwnerOfOrganization,
+  isPersonalOrganization,
+  isScratchpadOrganizationId,
+} from '~/models/organization';
 import { useRootLoaderData } from '~/root';
 import { useOrganizationLoaderData } from '~/routes/organization';
 import { useInsomniaSyncPullRemoteFileActionFetcher } from '~/routes/organization.$organizationId.insomnia-sync.pull-remote-file';
@@ -381,7 +386,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
     };
   }
 
-  if (!sessionId) {
+  if (!sessionId && !isOfflineOrganizationId(organizationId)) {
     await logout();
     throw redirect(href('/auth/login'));
   }

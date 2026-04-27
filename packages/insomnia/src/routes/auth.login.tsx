@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from 'react-aria-components';
 import { href, redirect, useNavigate } from 'react-router';
 
-import { models } from '~/insomnia-data';
-import { SCRATCHPAD_ORGANIZATION_ID } from '~/models/organization';
+import { LOCAL_ORGANIZATION_ID } from '~/models/organization';
 import { SegmentEvent } from '~/ui/analytics';
 import { getLoginUrl } from '~/ui/auth-session-provider.client';
 import { Icon } from '~/ui/components/icon';
@@ -145,8 +144,8 @@ const Component = () => {
         </Button>
 
         <div className="flex items-center justify-between gap-(--padding-xs) text-sm text-[rgba(var(--color-font-rgb),0.8)]">
-          <p>Or, start right away with limited capabilities</p>
-          <Tooltip position="top" message="Collections only, sign in later to save, sync, or share." wide>
+          <p>Or, start right away with local projects</p>
+          <Tooltip position="top" message="Create local projects without an Insomnia account." wide>
             <Icon icon="circle-info" />
           </Tooltip>
         </div>
@@ -157,20 +156,18 @@ const Component = () => {
               event: SegmentEvent.selectScratchpad,
             });
             navigate(
-              href('/organization/:organizationId/project/:projectId/workspace/:workspaceId/debug', {
-                organizationId: SCRATCHPAD_ORGANIZATION_ID,
-                projectId: models.project.SCRATCHPAD_PROJECT_ID,
-                workspaceId: models.workspace.SCRATCHPAD_WORKSPACE_ID,
+              href('/organization/:organizationId/project', {
+                organizationId: LOCAL_ORGANIZATION_ID,
               }),
             );
           }}
-          aria-label="Use local Scratch Pad"
+          aria-label="Use local projects"
           className="flex w-full items-center justify-center gap-(--padding-md) rounded-md border border-solid border-(--hl-md) text-base text-(--color-font) ring-1 ring-transparent transition-all hover:bg-(--hl-xs) focus:ring-(--hl-md) focus:ring-inset aria-pressed:bg-(--hl-sm)"
         >
           <div className="flex h-[35px] w-[40px] items-center justify-center border-r border-solid border-(--hl-sm) bg-(--hl-xs)">
             <Icon icon="code" />
           </div>
-          <span className="items flex-1">Use local Scratch Pad</span>
+          <span className="items flex-1">Use local projects</span>
         </Button>
 
         <p className="text-center text-xs text-[rgba(var(--color-font-rgb),0.8)]">

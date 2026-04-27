@@ -8,7 +8,7 @@ import { DEFAULT_SIDEBAR_SIZE, isKonnectSyncEnabled } from '~/common/constants';
 import type { GitRepository, Project } from '~/insomnia-data';
 import { services } from '~/insomnia-data';
 import { sortProjects } from '~/models/helpers/project';
-import { isScratchpadOrganizationId } from '~/models/organization';
+import { isOfflineOrganizationId, isScratchpadOrganizationId } from '~/models/organization';
 import { useRootLoaderData } from '~/root';
 import { useOrganizationLoaderData } from '~/routes/organization';
 import { getProjectsWithGitRepositories } from '~/routes/organization.$organizationId.project.$projectId._index';
@@ -36,7 +36,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
   const { id: sessionId } = await services.userSession.getOrCreate();
 
-  if (!sessionId) {
+  if (!sessionId && !isOfflineOrganizationId(organizationId)) {
     await logout();
     throw redirect(href('/auth/login'));
   }

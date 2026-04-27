@@ -2,7 +2,7 @@ import { type Billing, type FeatureList, getOrganizationFeatures, type Organizat
 import { href, redirect, type ShouldRevalidateFunctionArgs } from 'react-router';
 
 import { services } from '~/insomnia-data';
-import { isScratchpadOrganizationId } from '~/models/organization';
+import { isLocalOrganizationId, isScratchpadOrganizationId } from '~/models/organization';
 import { createFetcherLoadHook } from '~/utils/router';
 
 import type { Route } from './+types/organization.$organizationId.permissions';
@@ -15,6 +15,16 @@ export const fallbackFeatures = Object.freeze<FeatureList>({
   aiCommitMessages: { enabled: false, reason: 'Insomnia API unreachable' },
   aiMcpClient: { enabled: false, reason: 'Insomnia API unreachable' },
   konnectSync: { enabled: false, reason: 'Insomnia API unreachable' },
+});
+
+export const localFeatures = Object.freeze<FeatureList>({
+  bulkImport: { enabled: true },
+  gitSync: { enabled: true },
+  orgBasicRbac: { enabled: false, reason: 'Local organization' },
+  aiMockServers: { enabled: true },
+  aiCommitMessages: { enabled: true },
+  aiMcpClient: { enabled: true },
+  konnectSync: { enabled: false, reason: 'Local organization' },
 });
 
 // If network unreachable assume user has paid for the current period
@@ -32,6 +42,13 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (isScratchpadOrganizationId(organizationId)) {
     return {
       featuresPromise: Promise.resolve(fallbackFeatures),
+      billingPromise: Promise.resolve(fallbackBilling),
+    };
+  }
+
+  if (isLocalOrganizationId(organizationId)) {
+    return {
+      featuresPromise: Promise.resolve(localFeatures),
       billingPromise: Promise.resolve(fallbackBilling),
     };
   }

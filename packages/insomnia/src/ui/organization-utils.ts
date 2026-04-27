@@ -13,7 +13,7 @@ import { services } from '~/insomnia-data';
 import { database } from '../common/database';
 import { project } from '../models';
 import { updateLocalProjectToRemote } from '../models/helpers/project';
-import { isOwnerOfOrganization, isPersonalOrganization, isScratchpadOrganizationId } from '../models/organization';
+import { isOfflineOrganizationId, isOwnerOfOrganization, isPersonalOrganization } from '../models/organization';
 import {
   migrateProjectsIntoOrganization,
   shouldMigrateProjectUnderOrganization,
@@ -196,10 +196,14 @@ async function syncTeamProjects({
 }
 
 export const syncProjects = projectLock.wrapWithLock(async (organizationId: string) => {
+  if (isOfflineOrganizationId(organizationId)) {
+    return;
+  }
+
   const user = await services.userSession.getOrCreate();
   const teamProjects = await getAllTeamProjects(organizationId);
   // ensure we don't sync projects in the wrong place
-  if (Array.isArray(teamProjects) && user.id && !isScratchpadOrganizationId(organizationId)) {
+  if (Array.isArray(teamProjects) && user.id) {
     await syncTeamProjects({
       organizationId,
       teamProjects,

@@ -13,7 +13,7 @@ import type {
 } from '~/insomnia-data';
 import { models, services } from '~/insomnia-data';
 import { environment, grpcRequest, project, request, requestGroup, workspace } from '~/models';
-import { isScratchpadOrganizationId } from '~/models/organization';
+import { isOfflineOrganizationId } from '~/models/organization';
 import { invariant } from '~/utils/invariant';
 import { createFetcherLoadHook } from '~/utils/router';
 
@@ -43,7 +43,7 @@ export async function clientLoader(args: Route.ClientLoaderArgs) {
 
   const allOrganizations = JSON.parse(localStorage.getItem(`${accountId}:organizations`) || '[]') as Organization[];
 
-  const allOrganizationsIds = isScratchpadOrganizationId(organizationId)
+  const allOrganizationsIds = isOfflineOrganizationId(organizationId)
     ? [organizationId]
     : allOrganizations.map(org => org.id);
 

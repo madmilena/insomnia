@@ -1,7 +1,7 @@
 import { getOrganizationStorageRule, type StorageRules } from 'insomnia-api';
 
 import { services } from '~/insomnia-data';
-import { isScratchpadOrganizationId } from '~/models/organization';
+import { isLocalOrganizationId, isScratchpadOrganizationId } from '~/models/organization';
 import { invariant } from '~/utils/invariant';
 
 const inMemoryStorageRuleCache: Map<string, StorageRules> = new Map<string, StorageRules>();
@@ -24,6 +24,15 @@ export async function fetchAndCacheOrganizationStorageRule(
       enableCloudSync: false,
       enableLocalVault: true,
       enableGitSync: false,
+      isOverridden: false,
+    };
+  }
+
+  if (isLocalOrganizationId(organizationId)) {
+    return {
+      enableCloudSync: false,
+      enableLocalVault: true,
+      enableGitSync: true,
       isOverridden: false,
     };
   }

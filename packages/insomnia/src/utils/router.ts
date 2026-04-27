@@ -7,7 +7,7 @@ import { services } from '~/insomnia-data';
 
 import { database } from '../common/database';
 import * as models from '../models';
-import { findPersonalOrganization, SCRATCHPAD_ORGANIZATION_ID } from '../models/organization';
+import { findPersonalOrganization, LOCAL_ORGANIZATION_ID } from '../models/organization';
 import { CURRENT_MIGRATION_VERSION } from '../sync/git/git-migration-version';
 
 export const enum AsyncTask {
@@ -156,16 +156,12 @@ export const getInitialEntry = async () => {
       return href('/auth/login');
     }
 
-    return href('/organization/:organizationId/project/:projectId/workspace/:workspaceId/debug', {
-      organizationId: SCRATCHPAD_ORGANIZATION_ID,
-      projectId: models.project.SCRATCHPAD_PROJECT_ID,
-      workspaceId: models.workspace.SCRATCHPAD_WORKSPACE_ID,
+    return href('/organization/:organizationId/project', {
+      organizationId: LOCAL_ORGANIZATION_ID,
     });
   } catch {
-    return href('/organization/:organizationId/project/:projectId/workspace/:workspaceId/debug', {
-      organizationId: SCRATCHPAD_ORGANIZATION_ID,
-      projectId: models.project.SCRATCHPAD_PROJECT_ID,
-      workspaceId: models.workspace.SCRATCHPAD_WORKSPACE_ID,
+    return href('/organization/:organizationId/project', {
+      organizationId: LOCAL_ORGANIZATION_ID,
     });
   }
 };
