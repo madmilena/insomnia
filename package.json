@@ -30,7 +30,7 @@
     "type-check": "npm run type-check --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "clean": "git clean -dfX",
-    "install-libcurl-electron": "node-pre-gyp install --directory node_modules/@getinsomnia/node-libcurl --update-binary --runtime=electron --target=34.5.8",
+    "install-libcurl-electron": "node-pre-gyp install --directory node_modules/@getinsomnia/node-libcurl --update-binary --runtime=electron --target=34.3.4",
     "install-libcurl-node": "node-pre-gyp install --directory node_modules/@getinsomnia/node-libcurl --update-binary --runtime=node --target=22.18.0",
     "inso-start": "npm start -w insomnia-inso",
     "inso-package": "npm run build -w insomnia-inso && npm run package -w insomnia-inso",
@@ -79,7 +79,7 @@
     }
   },
   "dependencies": {
-    "@getinsomnia/node-libcurl": "3.1.0",
+    "@getinsomnia/node-libcurl": "2.34.0",
     "ajv": "^8.17.1"
   }
 }
